@@ -76,3 +76,43 @@ class TestRunStore:
         run = _make_run()
         store_a.save(run)
         assert store_b.get(run.id) is None
+
+    def test_list_by_suite_returns_runs_for_suite(self, tmp_path: Path) -> None:
+        store = RunStore(db_path=tmp_path / "test.db")
+        run_a = Run(
+            id="r1",
+            scenario_id="s1",
+            suite_id="suite-A",
+            session_id="sess",
+            model_id="gpt-4o",
+            provider="openai",
+            started_at=datetime(2024, 1, 1, tzinfo=UTC),
+        )
+        run_b = Run(
+            id="r2",
+            scenario_id="s2",
+            suite_id="suite-A",
+            session_id="sess",
+            model_id="gpt-4o",
+            provider="openai",
+            started_at=datetime(2024, 6, 1, tzinfo=UTC),
+        )
+        run_other = Run(
+            id="r3",
+            scenario_id="s3",
+            suite_id="suite-B",
+            session_id="sess",
+            model_id="gpt-4o",
+            provider="openai",
+            started_at=datetime(2024, 3, 1, tzinfo=UTC),
+        )
+        store.save(run_a)
+        store.save(run_b)
+        store.save(run_other)
+
+        results = store.list_by_suite("suite-A")
+        assert [r.id for r in results] == ["r2", "r1"]
+
+    def test_list_by_suite_empty(self, tmp_path: Path) -> None:
+        store = RunStore(db_path=tmp_path / "test.db")
+        assert store.list_by_suite("nonexistent") == []

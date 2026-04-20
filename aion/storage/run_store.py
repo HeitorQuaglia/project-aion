@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS aion_runs (
     payload     TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_runs_scenario ON aion_runs (scenario_id);
+CREATE INDEX IF NOT EXISTS idx_runs_suite ON aion_runs (suite_id);
 """
 
 
@@ -113,4 +114,22 @@ class RunStore:
         """
         with sqlite3.connect(str(self._db_path)) as conn:
             rows = conn.execute(sql, (scenario_id,)).fetchall()
+        return [Run.model_validate_json(row[0]) for row in rows]
+
+    def list_by_suite(self, suite_id: str) -> list[Run]:
+        """Return all runs for a suite, newest first.
+
+        Args:
+            suite_id: The suite to filter on.
+
+        Returns:
+            List of ``Run`` objects ordered by ``started_at`` descending.
+        """
+        sql = """
+        SELECT payload FROM aion_runs
+        WHERE suite_id = ?
+        ORDER BY started_at DESC
+        """
+        with sqlite3.connect(str(self._db_path)) as conn:
+            rows = conn.execute(sql, (suite_id,)).fetchall()
         return [Run.model_validate_json(row[0]) for row in rows]
