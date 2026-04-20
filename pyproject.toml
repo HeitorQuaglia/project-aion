@@ -4,6 +4,8 @@ version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "agno[aws,openai]>=2.5.17",
+    "anthropic>=0.96.0",
     "pydantic>=2.0",
 ]
 
@@ -14,11 +16,12 @@ dev = [
     "pytest>=8.0",
     "pytest-cov>=6.0",
     "pydantic>=2.0",
+    "pytest-mock>=3.15.1",
 ]
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = [
@@ -36,6 +39,9 @@ ignore = [
     "D107", # missing docstring in __init__
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D101", "D102", "D103"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
@@ -43,14 +49,14 @@ convention = "google"
 known-first-party = ["aion"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 strict = true
 pretty = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=aion --cov-report=term-missing --cov-fail-under=80"
 
 [tool.coverage.run]
-source = ["."]
-omit = ["tests/*", "main.py"]
+source = ["aion"]
+omit = ["tests/*"]
