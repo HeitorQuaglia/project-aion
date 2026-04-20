@@ -32,8 +32,7 @@ def _make_config(tmp_path: Path) -> AionConfig:
 
 def _make_suite(*inputs: str) -> Suite:
     scenarios = [
-        Scenario(id=f"s{i}", suite_id="test-suite", input=inp)
-        for i, inp in enumerate(inputs, 1)
+        Scenario(id=f"s{i}", suite_id="test-suite", input=inp) for i, inp in enumerate(inputs, 1)
     ]
     return Suite(id="test-suite", name="Test Suite", scenarios=scenarios)
 
