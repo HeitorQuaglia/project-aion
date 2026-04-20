@@ -3,4 +3,54 @@ name = "project-aion"
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "pydantic>=2.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15",
+    "ruff>=0.11",
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "pydantic>=2.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "D",    # pydocstyle
+]
+ignore = [
+    "D100", # missing docstring in public module (module-level ok to omit)
+    "D104", # missing docstring in public package
+    "D107", # missing docstring in __init__
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["aion"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+pretty = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*", "main.py"]

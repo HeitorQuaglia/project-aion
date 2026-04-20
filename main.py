@@ -1,4 +1,5 @@
-def main():
+def main() -> None:
+    """Entrypoint placeholder — will be replaced by the CLI."""
     print("Hello from project-aion!")
 
 
