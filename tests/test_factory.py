@@ -3,6 +3,7 @@
 import pytest
 from agno.models.aws import AwsBedrock
 from agno.models.openai import OpenAIChat
+from pydantic import ValidationError
 
 from aion.providers.factory import BedrockConfig, OpenAIConfig, build_model, provider_name
 
@@ -50,3 +51,33 @@ class TestProviderName:
     def test_unknown_raises_type_error(self) -> None:
         with pytest.raises(TypeError):
             provider_name(object())  # type: ignore[arg-type]
+
+
+class TestBedrockConfig:
+    def test_provider_default(self) -> None:
+        config = BedrockConfig(model_id="x")
+        assert config.provider == "bedrock"
+
+    def test_missing_model_id_raises(self) -> None:
+        with pytest.raises(ValidationError):
+            BedrockConfig()  # type: ignore[call-arg]
+
+    def test_frozen_raises_on_mutation(self) -> None:
+        config = BedrockConfig(model_id="x")
+        with pytest.raises(ValidationError):
+            config.model_id = "y"  # noqa: E501
+
+
+class TestOpenAIConfig:
+    def test_provider_default(self) -> None:
+        config = OpenAIConfig(model_id="gpt-4o")
+        assert config.provider == "openai"
+
+    def test_missing_model_id_raises(self) -> None:
+        with pytest.raises(ValidationError):
+            OpenAIConfig()  # type: ignore[call-arg]
+
+    def test_frozen_raises_on_mutation(self) -> None:
+        config = OpenAIConfig(model_id="gpt-4o")
+        with pytest.raises(ValidationError):
+            config.model_id = "gpt-3.5"  # noqa: E501

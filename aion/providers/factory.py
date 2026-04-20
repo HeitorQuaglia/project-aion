@@ -2,47 +2,51 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
 from agno.models.aws import AwsBedrock
 from agno.models.openai import OpenAIChat
+from pydantic import BaseModel, ConfigDict, Field
 
 ProviderName = Literal["bedrock", "openai"]
 
 
-@dataclass(frozen=True)
-class BedrockConfig:
+class BedrockConfig(BaseModel):
     """Configuration for an AWS Bedrock-hosted model.
 
-    Attributes:
+    Args:
         model_id: Bedrock model ARN or ID (e.g. ``"anthropic.claude-3-5-sonnet-20241022-v2:0"``).
         region: AWS region where the model endpoint is available.
     """
 
+    model_config = ConfigDict(frozen=True)
+
+    provider: Literal["bedrock"] = "bedrock"
     model_id: str
     region: str = "us-east-1"
 
 
-@dataclass(frozen=True)
-class OpenAIConfig:
+class OpenAIConfig(BaseModel):
     """Configuration for an OpenAI or OpenAI-compatible model endpoint.
 
-    Attributes:
+    Args:
         model_id: Model name (e.g. ``"gpt-4o"``).
         base_url: Override the API base URL for compatible endpoints (e.g. opencode).
         api_key: Explicit API key; falls back to ``OPENAI_API_KEY`` env var if ``None``.
     """
 
+    model_config = ConfigDict(frozen=True)
+
+    provider: Literal["openai"] = "openai"
     model_id: str
     base_url: str | None = None
     api_key: str | None = None
 
 
-ModelConfig = BedrockConfig | OpenAIConfig
+ModelConfig = Annotated[BedrockConfig | OpenAIConfig, Field(discriminator="provider")]
 
 
-def build_model(config: ModelConfig) -> AwsBedrock | OpenAIChat:
+def build_model(config: BedrockConfig | OpenAIConfig) -> AwsBedrock | OpenAIChat:
     """Construct an Agno model instance from a provider config.
 
     Args:
@@ -68,7 +72,7 @@ def build_model(config: ModelConfig) -> AwsBedrock | OpenAIChat:
             raise TypeError(f"Unknown model config type: {type(config)!r}")
 
 
-def provider_name(config: ModelConfig) -> ProviderName:
+def provider_name(config: BedrockConfig | OpenAIConfig) -> ProviderName:
     """Return the canonical provider name for a given config.
 
     Args:
