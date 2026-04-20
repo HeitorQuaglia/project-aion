@@ -6,11 +6,15 @@ requires-python = ">=3.14"
 dependencies = [
     "agno[aws,openai]>=2.5.17",
     "anthropic>=0.96.0",
+    "fastapi>=0.115",
     "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "uvicorn[standard]>=0.34",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28",
     "mypy>=1.15",
     "ruff>=0.11",
     "pytest>=8.0",
