@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import pytest
 from pydantic import ValidationError
 
-from aion.domain.models import Observation, Probe, Run, RunStatus, Scenario
+from aion.domain.models import Observation, Probe, Run, RunStatus, Scenario, Suite
 
 
 def _make_run(**overrides: object) -> Run:
@@ -92,3 +92,27 @@ class TestRun:
     def test_missing_required_fields(self) -> None:
         with pytest.raises(ValidationError):
             Run(id="r1", scenario_id="s1")  # type: ignore[call-arg]
+
+
+class TestSuite:
+    def test_defaults(self) -> None:
+        suite = Suite(id="s1", name="My Suite")
+        assert suite.scenarios == []
+        assert suite.description == ""
+
+    def test_with_scenarios(self) -> None:
+        scenario = Scenario(id="sc1", suite_id="s1", input="ping")
+        suite = Suite(id="s1", name="My Suite", scenarios=[scenario])
+        assert len(suite.scenarios) == 1
+        assert suite.scenarios[0].id == "sc1"
+
+    def test_json_roundtrip(self) -> None:
+        scenario = Scenario(id="sc1", suite_id="s1", input="ping")
+        suite = Suite(id="s1", name="My Suite", description="desc", scenarios=[scenario])
+        restored = Suite.model_validate_json(suite.model_dump_json())
+        assert restored == suite
+
+    def test_suite_id_not_validated_against_scenarios(self) -> None:
+        scenario = Scenario(id="sc1", suite_id="other-suite", input="ping")
+        suite = Suite(id="s1", name="My Suite", scenarios=[scenario])
+        assert suite.scenarios[0].suite_id == "other-suite"

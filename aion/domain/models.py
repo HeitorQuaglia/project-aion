@@ -101,3 +101,19 @@ class Run(BaseModel):
     model_id: str
     provider: Literal["bedrock", "openai"]
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class Suite(BaseModel):
+    """Named container for a related group of Scenarios.
+
+    Args:
+        id: Stable slug identifier for this suite (e.g. ``"rag-quality-v1"``).
+        name: Human-readable display name.
+        description: Optional prose explaining the suite's purpose and scope.
+        scenarios: Ordered list of scenarios belonging to this suite.
+    """
+
+    id: str
+    name: str
+    description: str = ""
+    scenarios: list[Scenario] = Field(default_factory=list)
