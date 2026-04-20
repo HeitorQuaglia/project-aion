@@ -191,6 +191,10 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+# Aion run artifacts (generated at runtime, not source)
+runs/
+*.sarif
+
 # PyPI configuration file
 .pypirc
 
