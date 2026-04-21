@@ -5,6 +5,7 @@ from __future__ import annotations
 from aion.config import AionConfig
 from aion.domain.models import Run, Suite
 from aion.executor.agent import ExecutorAgent
+from aion.executor.http_executor import HttpExecutorAgent
 from aion.storage.run_store import RunStore
 
 
@@ -12,7 +13,7 @@ class Runner:
     """Drives execution of all scenarios in a Suite under a given AionConfig.
 
     Args:
-        config: Runtime configuration specifying the LLM and storage location.
+        config: Runtime configuration specifying the executor and storage location.
     """
 
     def __init__(self, config: AionConfig) -> None:
@@ -21,7 +22,14 @@ class Runner:
         The SQLite database file is placed at ``config.storage_path / "aion.db"``.
         """
         store = RunStore(db_path=config.storage_path / "aion.db")
-        self._executor = ExecutorAgent(model_config=config.llm, run_store=store)
+        if config.http_target is not None:
+            self._executor: ExecutorAgent | HttpExecutorAgent = HttpExecutorAgent(
+                target_config=config.http_target,
+                run_store=store,
+            )
+        else:
+            assert config.llm is not None
+            self._executor = ExecutorAgent(model_config=config.llm, run_store=store)
 
     def run_suite(self, suite: Suite) -> list[Run]:
         """Execute every scenario in the suite and return all Run records.

@@ -99,7 +99,7 @@ class Run(BaseModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     model_id: str
-    provider: Literal["bedrock", "openai"]
+    provider: str
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 

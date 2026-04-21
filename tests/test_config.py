@@ -6,13 +6,26 @@ import pytest
 from pydantic import ValidationError
 
 from aion.config import AionConfig
+from aion.executor.http_executor import HttpTargetConfig
 from aion.providers.factory import BedrockConfig, OpenAIConfig
 
 
 class TestAionConfig:
-    def test_requires_llm(self) -> None:
+    def test_requires_at_least_one_executor(self) -> None:
         with pytest.raises(ValidationError):
             AionConfig()  # type: ignore[call-arg]
+
+    def test_rejects_both_llm_and_http_target(self) -> None:
+        with pytest.raises(ValidationError):
+            AionConfig(
+                llm=OpenAIConfig(model_id="gpt-4o"),
+                http_target=HttpTargetConfig(url="http://localhost/chat"),
+            )
+
+    def test_accepts_http_target_alone(self) -> None:
+        config = AionConfig(http_target=HttpTargetConfig(url="http://localhost/chat"))
+        assert config.llm is None
+        assert config.http_target is not None
 
     def test_storage_path_defaults_to_runs(self) -> None:
         config = AionConfig(llm=OpenAIConfig(model_id="gpt-4o"))
