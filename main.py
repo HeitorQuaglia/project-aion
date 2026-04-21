@@ -1,7 +1,4 @@
-def main() -> None:
-    """Entrypoint placeholder — will be replaced by the CLI."""
-    print("Hello from project-aion!")
-
+from aion.cli.app import app
 
 if __name__ == "__main__":
-    main()
+    app()
