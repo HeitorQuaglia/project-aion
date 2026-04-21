@@ -139,6 +139,81 @@ All settings are driven by environment variables (prefix `AION_`).
 
 ---
 
+## CLI (CI mode)
+
+The `aion` CLI runs a suite defined in a YAML file and exits with code `0` (all passed) or `1` (any failed).
+
+```bash
+uv run aion <config.yaml>
+uv run aion <config.yaml> --output json
+uv run aion <config.yaml> --storage-path /tmp/runs
+```
+
+### Config file format
+
+```yaml
+# aion.yaml
+executor:
+  type: openai          # openai | bedrock | http
+  model_id: gpt-4o
+  api_key: null         # falls back to OPENAI_API_KEY
+
+storage_path: runs      # optional, default "runs"
+
+suite:
+  id: my-suite
+  name: My Suite
+  scenarios:
+    - id: sc-1
+      suite_id: my-suite
+      input: "What is the return policy?"
+      probes:
+        - id: mentions-policy
+          description: "Does the response describe a concrete return policy?"
+          probe_type: llm_judge
+```
+
+#### Bedrock executor
+
+```yaml
+executor:
+  type: bedrock
+  model_id: anthropic.claude-3-5-sonnet-20241022-v2:0
+  region: us-east-1
+```
+
+#### HTTP executor
+
+```yaml
+executor:
+  type: http
+  url: http://localhost:8001/api/v1/chat
+  headers:
+    Authorization: "Bearer <key>"
+  provider_name: my-agent
+  response_field: message   # JSON key to extract from agent response
+  timeout_seconds: 30.0
+```
+
+### Output
+
+**Text (default)**
+```
+[PASS] sc-1 — 843ms
+[FAIL] sc-2 — 1204ms
+
+1 passed, 1 failed
+```
+
+**JSON** (`--output json`) — one JSON line per run, followed by a summary line:
+```jsonl
+{"id": "...", "scenario_id": "sc-1", "status": "complete", ...}
+{"id": "...", "scenario_id": "sc-2", "status": "failed", ...}
+{"passed": 1, "failed": 1, "total": 2}
+```
+
+---
+
 ## Running
 
 ### Backend (API server)
@@ -160,7 +235,38 @@ uv run pytest            # tests + coverage (80% floor)
 
 ## Integrating an existing agent
 
-To test an existing HTTP agent service with Aion:
+### Via CLI
+
+Create a config YAML pointing at your agent's HTTP endpoint and run it directly in CI:
+
+```yaml
+executor:
+  type: http
+  url: http://localhost:8001/api/test/chat
+  headers:
+    Authorization: "Bearer <key>"
+  provider_name: my-agent
+
+suite:
+  id: my-agent-v1
+  name: My Agent Eval
+  scenarios:
+    - id: s1
+      suite_id: my-agent-v1
+      input: "What is the return policy?"
+      tags:
+        context: customer-support
+      probes:
+        - id: mentions-policy
+          description: "Does the response describe a concrete return policy?"
+          probe_type: llm_judge
+```
+
+```bash
+uv run aion my-agent.yaml
+```
+
+### Via REST API
 
 1. **Add an adapter endpoint** to the agent's service that accepts `{message, ...tags}` and returns `{message}` (or configure `AION_HTTP_TARGET_RESPONSE_FIELD` to match its existing response shape).
 
