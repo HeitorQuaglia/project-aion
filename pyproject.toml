@@ -4,21 +4,41 @@ version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "pydantic>=2.0",
+    "agno[aws,openai]>=2.5.17",
+    "anthropic>=0.96.0",
+    "fastapi>=0.136.0",
+    "httpx>=0.28.1",
+    "pydantic>=2.13.3",
+    "pydantic-settings>=2.14.0",
+    "pyyaml>=6.0",
+    "typer>=0.12",
+    "uvicorn[standard]>=0.44.0",
 ]
+
+[project.scripts]
+aion = "aion.cli.app:app"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["aion*"]
 
 [dependency-groups]
 dev = [
-    "mypy>=1.15",
-    "ruff>=0.11",
-    "pytest>=8.0",
-    "pytest-cov>=6.0",
-    "pydantic>=2.0",
+    "httpx>=0.28.1",
+    "mypy>=1.20.1",
+    "ruff>=0.15.11",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "pydantic>=2.13.3",
+    "pytest-mock>=3.15.1",
+    "types-pyyaml>=6.0",
 ]
 
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 
 [tool.ruff.lint]
 select = [
@@ -36,6 +56,9 @@ ignore = [
     "D107", # missing docstring in __init__
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D101", "D102", "D103"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
@@ -43,14 +66,14 @@ convention = "google"
 known-first-party = ["aion"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 strict = true
 pretty = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=aion --cov-report=term-missing --cov-fail-under=80"
 
 [tool.coverage.run]
-source = ["."]
-omit = ["tests/*", "main.py"]
+source = ["aion"]
+omit = ["tests/*"]
