@@ -3,8 +3,6 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from aion.domain.models import RunStatus, Scenario
 from aion.executor.http_executor import HttpExecutorAgent, HttpTargetConfig
 from aion.storage.run_store import RunStore
